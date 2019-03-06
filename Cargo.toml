@@ -1,0 +1,8 @@
+[package]
+name = "oraclecmd"
+version = "1.0.0"
+authors = ["planet0104 <planet0104@gmail.com>"]
+
+[dependencies]
+oracle = "*"
+rust-ini = "*"
