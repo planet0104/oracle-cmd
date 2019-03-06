@@ -2,3 +2,5 @@
 **/*.rs.bk
 
 *.dll
+conf.ini
+Cargo.lock

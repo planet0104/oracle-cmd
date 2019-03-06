@@ -10,8 +10,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "oracle"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.3.0-dev"
+source = "git+https://github.com/kubo/rust-oracle#090bde7a163a0135df05cd94612df07eaa982daa"
 dependencies = [
  "cc 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -22,7 +22,7 @@ dependencies = [
 name = "oraclecmd"
 version = "1.0.0"
 dependencies = [
- "oracle 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "oracle 0.3.0-dev (git+https://github.com/kubo/rust-oracle)",
  "rust-ini 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -39,6 +39,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [metadata]
 "checksum cc 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)" = "f159dfd43363c4d08055a07703eb7a3406b0dac4d0584d96965a3262db3c9d16"
 "checksum lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "76f033c7ad61445c5b347c7382dd1237847eb1bce590fe50365dcb33d546be73"
-"checksum oracle 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fc193f34dc1f9f13ea5afd1a5a32abc4b1e1858fa6715756d0491dfe72a59b03"
+"checksum oracle 0.3.0-dev (git+https://github.com/kubo/rust-oracle)" = "<none>"
 "checksum rust-ini 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
 "checksum try_from 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "923a7ee3e97dbfe8685261beb4511cc9620a1252405d02693d43169729570111"

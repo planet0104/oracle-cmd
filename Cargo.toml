@@ -2,7 +2,8 @@
 name = "oraclecmd"
 version = "1.0.0"
 authors = ["planet0104 <planet0104@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-oracle = "*"
+oracle = { git = "https://github.com/kubo/rust-oracle" }
 rust-ini = "*"

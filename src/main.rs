@@ -1,4 +1,3 @@
-extern crate oracle;
 use oracle::Connection;
 use std::env;
 use std::io;
@@ -89,18 +88,39 @@ fn main() {
             Err(error) => println!("{}", error),
         }
     }
-    println!("结束.");
+    println!("输入Enter键退出.");
+    let _ = io::stdin().read_line(&mut String::new());
 }
 
 fn execute(conn: &Connection, sql: &str) {
-    match conn.query(sql, &[]) {
-        Ok(set) => {
-            if set.count() == 0{
-                println!("查询结果为空");
-            }
-            for row in &set {
-                println!("{:?}", row);
-                // let value:Result<String, oracle::Error> = row.get(7);
+    match conn.prepare(sql,&[]){
+        Ok(mut stmt) => {
+            match stmt.query(&[]) {
+                Ok(rows) => {
+                    // for info in rows.column_info() {
+                    //     print!("{}|", info.name());
+                    // }
+                    // println!();
+                    let rows:Vec<_> = rows.collect();
+                    println!("{}条查询结果", rows.len());
+                    for row in &rows {
+                        match row{
+                            Ok(row) => {
+                                for val in row.sql_values(){
+                                    let val:String = val.get().unwrap_or("NULL".to_string());
+                                    print!("{:15}|", val);
+                                }
+                                println!();
+                            }
+                            Err(err) =>{
+                                println!("{:?}", err);
+                            }
+                        }
+                    }
+                }
+                Err(err) => {
+                    println!("{:?}", err);
+                }
             }
         }
         Err(err) => {
