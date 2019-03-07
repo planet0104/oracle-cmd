@@ -8,3 +8,4 @@ edition = "2018"
 oracle = { git = "https://github.com/kubo/rust-oracle" }
 rust-ini = "*"
 prettytable-rs = "*"
+winapi = "0.3.6"

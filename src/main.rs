@@ -4,6 +4,11 @@ use std::io;
 // #[macro_use] extern crate prettytable;
 use prettytable::{color, Attr, Cell, Row, Table};
 
+use winapi::um::processenv::GetStdHandle;
+use winapi::um::winbase::STD_OUTPUT_HANDLE;
+use winapi::um::wincon::SetConsoleScreenBufferSize;
+use winapi::um::wincon::COORD;
+
 fn main() {
     let params = || -> Result<(String, String, String), Box<std::error::Error>> {
         let args: Vec<String> = env::args().collect();
@@ -71,12 +76,23 @@ fn main() {
         return;
     }
     let conn = ret.unwrap();
-    println!(
-        "链接成功(输入 quit, exit 退出程序，否则将会导致第二次链接失败！)"
-    );
+    println!("链接成功 输入 quit, exit 退出程序.");
     //查询验证码的sql语句
+    let mut blank = false;
     loop {
-        println!("SQL:");
+        println!(
+            "{}",
+            if blank {
+                blank = false;
+                unsafe {
+                    let handle = GetStdHandle(STD_OUTPUT_HANDLE);
+                    SetConsoleScreenBufferSize(handle, COORD { X: 400, Y: 100 });
+                }
+                ""
+            } else {
+                "SQL:"
+            }
+        );
         let mut cmd = String::new();
         match io::stdin().read_line(&mut cmd) {
             Ok(_n) => {
@@ -86,9 +102,12 @@ fn main() {
                     let _ = conn.close();
                     break;
                 } else if sql.len() == 0 {
+                    blank = true;
                     continue;
                 }
-                execute(&conn, &sql);
+                if let Err(err) = execute(&conn, vec![sql.to_string()]) {
+                    println!("{:?}", err);
+                }
             }
             Err(error) => println!("{}", error),
         }
@@ -97,56 +116,67 @@ fn main() {
     let _ = io::stdin().read_line(&mut String::new());
 }
 
-fn execute(conn: &Connection, sql: &str) {
-    match conn.prepare(sql, &[]) {
-        Ok(mut stmt) => {
-            match stmt.query(&[]) {
-                Ok(rows) => {
-                    let mut table = Table::new();
-                    //输出表头
+fn execute(conn: &Connection, mut sql: Vec<String>) -> Result<(), Box<std::error::Error>> {
+    if sql[0].starts_with("struct") {
+        let mut split = sql[0].split(" ");
+        let _ = split.next().unwrap_or("");
+        let tb = split.next().unwrap_or("");
+        sql = vec![format!("select utc.column_name,utc.data_type,utc.data_length,utc.data_precision, utc.data_Scale,utc.nullable,utc.data_default,ucc.comments from user_tab_columns utc,user_col_comments ucc where utc.table_name = ucc.table_name and utc.column_name = ucc.column_name and utc.table_name = '{}' order by column_id", tb),
+             format!("select  col.* from user_constraints con,user_cons_columns col where con.constraint_name=col.constraint_name and con.constraint_type='P' and col.table_name='{}'", tb)];
+    }
+
+    for sql in sql {
+        let mut stmt = conn.prepare(&sql, &[])?;
+        if sql.starts_with("delete") {
+            println!("确认删除? Y/N:");
+            let mut cmd = String::new();
+            let _n = io::stdin().read_line(&mut cmd)?;
+            let sql = cmd.replace("\r\n", "");
+            let sql = sql.trim();
+            if sql == "Y" {
+                println!("删除:{:?}", conn.execute(&sql, &[])?);
+                println!("提交:{:?}", conn.commit()?);
+            }
+            continue;
+        }
+
+        let rows = stmt.query(&[])?;
+        let mut table = Table::new();
+        //输出表头
+        table.add_row(Row::new(
+            rows.column_info()
+                .iter()
+                .map(|info| {
+                    Cell::new(info.name())
+                        .with_style(Attr::Bold)
+                        .with_style(Attr::ForegroundColor(color::YELLOW))
+                })
+                .collect(),
+        ));
+
+        let rows: Vec<_> = rows.collect();
+        println!("{}条查询结果", rows.len());
+        for row in &rows {
+            match row {
+                Ok(row) => {
+                    //输出记录
                     table.add_row(Row::new(
-                        rows.column_info()
+                        row.sql_values()
                             .iter()
-                            .map(|info| {
-                                Cell::new(info.name())
-                                    .with_style(Attr::Bold)
-                                    .with_style(Attr::ForegroundColor(color::YELLOW))
+                            .map(|val| {
+                                let val: String = val.get().unwrap_or("NULL".to_string());
+                                Cell::new(&val)
                             })
                             .collect(),
                     ));
-
-                    let rows: Vec<_> = rows.collect();
-                    println!("{}条查询结果", rows.len());
-                    for row in &rows {
-                        match row {
-                            Ok(row) => {
-                                //输出记录
-                                table.add_row(Row::new(
-                                    row.sql_values()
-                                        .iter()
-                                        .map(|val| {
-                                            let val: String =
-                                                val.get().unwrap_or("NULL".to_string());
-                                            Cell::new(&val)
-                                        })
-                                        .collect(),
-                                ));
-                            }
-                            Err(err) => {
-                                //在行中显示错误信息
-                                table.add_row(Row::new(vec![Cell::new(&format!("{:?}", err))]));
-                            }
-                        }
-                    }
-                    table.printstd();
                 }
                 Err(err) => {
-                    println!("{:?}", err);
+                    //在行中显示错误信息
+                    table.add_row(Row::new(vec![Cell::new(&format!("{:?}", err))]));
                 }
             }
         }
-        Err(err) => {
-            println!("{:?}", err);
-        }
+        table.printstd();
     }
+    Ok(())
 }
