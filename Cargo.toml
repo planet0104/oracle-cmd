@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 oracle = { git = "https://github.com/kubo/rust-oracle" }
 rust-ini = "*"
+prettytable-rs = "*"
