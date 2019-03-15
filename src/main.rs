@@ -86,7 +86,7 @@ fn main() {
                 blank = false;
                 unsafe {
                     let handle = GetStdHandle(STD_OUTPUT_HANDLE);
-                    SetConsoleScreenBufferSize(handle, COORD { X: 400, Y: 100 });
+                    SetConsoleScreenBufferSize(handle, COORD { X: 500, Y: 500 });
                 }
                 ""
             } else {
@@ -131,12 +131,17 @@ fn execute(conn: &Connection, mut sql: Vec<String>) -> Result<(), Box<std::error
             println!("确认删除? Y/N:");
             let mut cmd = String::new();
             let _n = io::stdin().read_line(&mut cmd)?;
-            let sql = cmd.replace("\r\n", "");
+            let cmd = cmd.replace("\r\n", "");
             let sql = sql.trim();
-            if sql == "Y" {
+            if cmd == "Y" {
                 println!("删除:{:?}", conn.execute(&sql, &[])?);
                 println!("提交:{:?}", conn.commit()?);
             }
+            continue;
+        }
+        if sql.starts_with("insert") {
+            conn.execute(&sql, &[])?;
+            conn.commit()?;
             continue;
         }
 
