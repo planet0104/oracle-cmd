@@ -1,3 +1,3 @@
-# oracle-cmd
+# 一个简单的oracle命令行客户端 
 
-Oracle的命令行客户端
+一个简单的oracle命令行客户端 
