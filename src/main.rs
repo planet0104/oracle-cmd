@@ -127,7 +127,7 @@ fn execute(conn: &Connection, mut sql: Vec<String>) -> Result<(), Box<std::error
 
     for sql in sql {
         let mut stmt = conn.prepare(&sql, &[])?;
-        if sql.starts_with("delete") {
+        if sql.starts_with("delete") || sql.starts_with("DELETE")  {
             println!("确认删除? Y/N:");
             let mut cmd = String::new();
             let _n = io::stdin().read_line(&mut cmd)?;
@@ -139,7 +139,7 @@ fn execute(conn: &Connection, mut sql: Vec<String>) -> Result<(), Box<std::error
             }
             continue;
         }
-        if sql.starts_with("insert") {
+        if sql.starts_with("insert") || sql.starts_with("INSERT") {
             conn.execute(&sql, &[])?;
             conn.commit()?;
             continue;
