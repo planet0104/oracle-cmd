@@ -86,7 +86,7 @@ fn main() {
                 blank = false;
                 unsafe {
                     let handle = GetStdHandle(STD_OUTPUT_HANDLE);
-                    SetConsoleScreenBufferSize(handle, COORD { X: 500, Y: 500 });
+                    SetConsoleScreenBufferSize(handle, COORD { X: 600, Y: 500 });
                 }
                 ""
             } else {
